@@ -49,12 +49,17 @@ body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#667eea
 .game-card h2{color:#764ba2;font-size:2rem}
 
 /* Dog */
-.dog-area{background:rgba(255,255,255,.98);padding:20px;border-radius:18px;position:relative;min-height:350px}
+.dog-area{background:rgba(255,255,255,.98);padding:20px;border-radius:18px;position:relative;min-height:350px;overflow:hidden}
 .dog-house{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);width:130px;height:110px;background:linear-gradient(135deg,#8B4513,#A0522D);border-radius:15px 15px 0 0;cursor:pointer}
 .dog-house::before{content:'🏠';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:3.5rem}
-.dog{position:absolute;bottom:25px;font-size:5rem;display:none}
+.dog{position:absolute;bottom:25px;font-size:5rem;display:none;transition:left .6s ease,transform .3s}
 .dog-hearts{position:absolute;top:15px;left:15px;font-size:1.3rem;background:rgba(255,255,255,.9);padding:8px 12px;border-radius:10px}
 .dog-actions{position:absolute;top:15px;right:15px;display:none;flex-direction:column;gap:8px}
+.dog-prop{position:absolute;font-size:3rem;pointer-events:none}
+@keyframes throwRight{0%{left:50%;bottom:80%;opacity:1}100%{left:75%;bottom:25px;opacity:1}}
+@keyframes throwLeft{0%{left:50%;bottom:80%;opacity:1}100%{left:18%;bottom:25px;opacity:1}}
+@keyframes handPet{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes digAnim{0%,100%{transform:scaleX(1)}50%{transform:scaleX(-1) translateX(-10px)}}
 
 /* English Monster Game */
 #english-game{display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1a1a2e,#16213e);z-index:3000;overflow:hidden}
@@ -98,13 +103,13 @@ body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#667eea
 .math-hud{position:absolute;top:15px;right:15px;background:rgba(0,0,0,.7);padding:12px 20px;border-radius:15px;color:#fff;display:flex;gap:20px;align-items:center;font-size:1.2rem}
 .math-progress-bar{position:absolute;top:75px;left:50%;transform:translateX(-50%);width:80%;max-width:500px;height:14px;background:rgba(255,255,255,.2);border-radius:10px;overflow:hidden}
 .math-progress-fill{height:100%;background:linear-gradient(90deg,#00ff88,#00b4d8);border-radius:10px;transition:width .4s}
-.math-monster{position:absolute;bottom:38%;left:50%;transform:translateX(-50%);text-align:center;font-size:7rem;transition:all .4s;animation:mfloat 2s ease-in-out infinite}
+.math-monster{position:absolute;top:18%;left:50%;transform:translateX(-50%);text-align:center;font-size:7rem;transition:all .4s;animation:mfloat 2s ease-in-out infinite}
 @keyframes mfloat{0%,100%{transform:translateX(-50%) translateY(0) rotate(0deg)}50%{transform:translateX(-50%) translateY(-18px) rotate(3deg)}}
 .math-monster.dead{animation:mdie .6s forwards!important}
 @keyframes mdie{0%{transform:translateX(-50%) translateY(0) scale(1) rotate(0deg);opacity:1}30%{transform:translateX(-50%) translateY(-40px) scale(1.3) rotate(20deg);opacity:.9}100%{transform:translateX(-50%) translateY(80px) scale(0) rotate(180deg);opacity:0}}
 .math-stars-burst{position:absolute;pointer-events:none;font-size:2.5rem;animation:burst .8s forwards}
 @keyframes burst{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-120px) scale(1.5)}}
-.math-question{position:absolute;top:22%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);padding:22px 50px;border-radius:18px;color:#fff;font-size:3rem;font-weight:700;text-align:center;white-space:nowrap;border:2px solid rgba(255,255,255,.15)}
+.math-question{position:absolute;top:48%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);padding:22px 50px;border-radius:18px;color:#fff;font-size:3rem;font-weight:700;text-align:center;white-space:nowrap;border:2px solid rgba(255,255,255,.15)}
 .math-input-panel{position:absolute;bottom:55px;left:50%;transform:translateX(-50%);width:90%;max-width:500px;text-align:center}
 .math-input{width:100%;background:rgba(255,255,255,.96);border:3px solid #667eea;border-radius:15px;padding:20px;font-size:2.5rem;text-align:center;font-weight:700}
 .math-input.correct{border-color:#27ae60;background:#d4edda}
@@ -155,7 +160,7 @@ body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#667eea
 
 <div class="games">
 <div class="game-card" onclick="selectGame('math')">
-<span class="emoji">🔢</span>
+<span class="emoji">💗</span>
 <h2>Математика</h2>
 <p>5 рівнів складності</p>
 </div>
@@ -458,33 +463,163 @@ function throwBone(){
 const user=getUser();
 if(user.stars<800)return alert('Потрібно 800⭐');
 user.stars-=800;
-if(user.dog.hearts<5) user.dog.hearts=Math.min(10,user.dog.hearts+1);
+if(user.dog.hearts<10) user.dog.hearts=Math.min(10,user.dog.hearts+1);
 saveUser(user);
 updateUI();
 updateDog();
-alert('🦴 Кісточка!');
+
+const area=document.querySelector('.dog-area');
+const areaW=area.offsetWidth;
+
+// Create bone prop flying to the right
+const bone=document.createElement('div');
+bone.className='dog-prop';
+bone.textContent='🦴';
+bone.style.cssText=`left:50%;bottom:80%;transition:left 0.8s ease,bottom 0.8s ease`;
+area.appendChild(bone);
+
+// Animate bone flying right
+setTimeout(()=>{
+  bone.style.left='75%';
+  bone.style.bottom='25px';
+},50);
+
+// Dog runs right to pick it up
+const dog=document.getElementById('dog');
+dog.style.display='block';
+setTimeout(()=>{
+  dog.style.left='72%';
+  dog.style.transform='translateX(0)';
+},900);
+
+// Dog holds bone in teeth
+setTimeout(()=>{
+  bone.style.left='72%';
+  bone.style.bottom='60px';
+  dog.textContent='🐕';
+},1600);
+
+// Dog runs left to bury
+setTimeout(()=>{
+  dog.style.left='18%';
+  dog.style.transform='scaleX(-1)';
+  bone.style.left='18%';
+  bone.style.bottom='60px';
+  bone.style.transition='left 0.8s ease';
+},2400);
+
+// Bury animation
+setTimeout(()=>{
+  bone.style.bottom='-30px';
+  bone.style.opacity='0';
+  dog.textContent='🐕';
+},3300);
+
+// Dog returns home
+setTimeout(()=>{
+  dog.style.left='50%';
+  dog.style.transform='translateX(-50%)';
+  bone.remove();
+},4200);
+
+setTimeout(()=>{dog.style.display='none';},5500);
 }
 
 function petDog(){
 const user=getUser();
 if(user.stars<800)return alert('Потрібно 800⭐');
 user.stars-=800;
-if(user.dog.hearts<5) user.dog.hearts=Math.min(10,user.dog.hearts+1);
+if(user.dog.hearts<10) user.dog.hearts=Math.min(10,user.dog.hearts+1);
 saveUser(user);
 updateUI();
 updateDog();
-alert('✋ Погладив!');
+
+const area=document.querySelector('.dog-area');
+const dog=document.getElementById('dog');
+dog.style.display='block';
+dog.style.left='50%';
+dog.style.transform='translateX(-50%)';
+
+// Create hand above dog
+const hand=document.createElement('div');
+hand.className='dog-prop';
+hand.textContent='✋';
+hand.style.cssText='left:calc(50% + 20px);bottom:110px;font-size:3.5rem;transition:bottom 0.2s ease';
+area.appendChild(hand);
+
+// Pet 5 times
+let count=0;
+const pet=setInterval(()=>{
+  count++;
+  const isDown=count%2===1;
+  hand.style.bottom=isDown?'90px':'115px';
+  // Hearts pop on each stroke
+  if(isDown){
+    const heart=document.createElement('div');
+    heart.className='dog-prop';
+    heart.textContent='💗';
+    heart.style.cssText=`left:${45+r(15)}%;bottom:150px;font-size:2rem;transition:bottom 0.6s,opacity 0.6s`;
+    area.appendChild(heart);
+    setTimeout(()=>{heart.style.bottom='220px';heart.style.opacity='0';},50);
+    setTimeout(()=>heart.remove(),700);
+  }
+  if(count>=10){
+    clearInterval(pet);
+    setTimeout(()=>{hand.remove();dog.style.display='none';},600);
+  }
+},400);
 }
 
 function throwBall(){
 const user=getUser();
 if(user.stars<800)return alert('Потрібно 800⭐');
 user.stars-=800;
-if(user.dog.hearts<5) user.dog.hearts=Math.min(10,user.dog.hearts+1);
+if(user.dog.hearts<10) user.dog.hearts=Math.min(10,user.dog.hearts+1);
 saveUser(user);
 updateUI();
 updateDog();
-alert('⚽ М\'ячик!');
+
+const area=document.querySelector('.dog-area');
+
+// Ball flies left
+const ball=document.createElement('div');
+ball.className='dog-prop';
+ball.textContent='⚽';
+ball.style.cssText='left:50%;bottom:80%;transition:left 0.8s ease,bottom 0.8s ease';
+area.appendChild(ball);
+
+setTimeout(()=>{
+  ball.style.left='18%';
+  ball.style.bottom='25px';
+},50);
+
+const dog=document.getElementById('dog');
+dog.style.display='block';
+
+// Dog runs left
+setTimeout(()=>{
+  dog.style.left='15%';
+  dog.style.transform='scaleX(-1)';
+},900);
+
+// Dog holds ball
+setTimeout(()=>{
+  ball.style.left='15%';
+  ball.style.bottom='60px';
+},1600);
+
+// Dog holds ball for 5 seconds then returns
+setTimeout(()=>{
+  dog.style.left='50%';
+  dog.style.transform='translateX(-50%)';
+  ball.style.left='50%';
+  ball.style.transition='left 0.8s ease';
+},6600);
+
+setTimeout(()=>{
+  ball.remove();
+  dog.style.display='none';
+},7600);
 }
 
 function exportData(){
@@ -512,6 +647,11 @@ document.getElementById('en-game-area').classList.add('hidden');
 function closeEnglish(){
 document.getElementById('english-game').style.display='none';
 document.getElementById('main').style.display='block';
+if(englishState&&englishState.stars>0){
+const user=getUser();
+user.stars+=englishState.stars;
+saveUser(user);
+}
 englishState=null;
 updateUI();
 }
@@ -1001,6 +1141,11 @@ if(type==='math'){
 function closeMath(){
 document.getElementById('math-game').style.display='none';
 document.getElementById('main').style.display='block';
+if(mathState&&mathState.stars>0){
+const user=getUser();
+user.stars+=mathState.stars;
+saveUser(user);
+}
 mathState=null;
 updateUI();
 }

@@ -335,14 +335,7 @@ nature:[ // Природа
 ]
 };
 
-// Math levels
-const MATH_LEVELS={
-A:{name:'A',desc:'0-9',reward:10,gen:()=>{const a=r(10),b=r(10),op=rnd(['+','-']);let res=op==='+'?a+b:a-b;if(res<0)return{q:`${b}-${a}`,a:b-a};return{q:`${a}${op}${b}`,a:res}}},
-B:{name:'B',desc:'3 цифри',reward:20,gen:()=>{let a=r(10),b=r(10),c=r(10),o1=rnd(['+','-']),o2=rnd(['+','-']),res=a;res=o1==='+'?res+b:res-b;res=o2==='+'?res+c:res-c;if(res<0)return MATH_LEVELS.B.gen();return{q:`${a}${o1}${b}${o2}${c}`,a:res}}},
-C:{name:'C',desc:'0-9 та 10-19',reward:30,gen:()=>{const a=r(10),b=r(10)+10,op=rnd(['+','-']);let res=op==='+'?a+b:a-b;if(res<0)return{q:`${b}-${a}`,a:b-a};return{q:`${a}${op}${b}`,a:res}}},
-D:{name:'D',desc:'10-99',reward:50,gen:()=>{const a=r(90)+10,b=r(90)+10,op=rnd(['+','-']);let res=op==='+'?a+b:a-b;if(res<0)return{q:`${b}-${a}`,a:b-a};return{q:`${a}${op}${b}`,a:res}}},
-E:{name:'E',desc:'10-19 та 100-199',reward:100,gen:()=>{const a=r(10)+10,b=r(100)+100,op=rnd(['+','-']);let res=op==='+'?a+b:a-b;if(res<0)return{q:`${b}-${a}`,a:b-a};return{q:`${a}${op}${b}`,a:res}}}
-};
+
 
 function r(n){return Math.floor(Math.random()*n)}
 function rnd(a){return a[r(a.length)]}

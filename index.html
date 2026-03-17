@@ -91,6 +91,33 @@ body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#667eea
 .victory-box h1{font-size:4rem;color:#27ae60;margin-bottom:20px}
 .victory-stars{font-size:8rem;margin:20px 0}
 @keyframes bounce{0%,20%,50%,80%,100%{transform:translateY(0)}40%{transform:translateY(-30px)}60%{transform:translateY(-15px)}}
+
+/* Math Game */
+#math-game{display:none;position:fixed;inset:0;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);z-index:3000;overflow:hidden}
+.math-back{position:absolute;top:15px;left:15px;z-index:100;background:#e74c3c;color:#fff;border:none;padding:12px 24px;border-radius:28px;cursor:pointer;font-size:1.1rem;font-weight:700}
+.math-hud{position:absolute;top:15px;right:15px;background:rgba(0,0,0,.7);padding:12px 20px;border-radius:15px;color:#fff;display:flex;gap:20px;align-items:center;font-size:1.2rem}
+.math-progress-bar{position:absolute;top:75px;left:50%;transform:translateX(-50%);width:80%;max-width:500px;height:14px;background:rgba(255,255,255,.2);border-radius:10px;overflow:hidden}
+.math-progress-fill{height:100%;background:linear-gradient(90deg,#00ff88,#00b4d8);border-radius:10px;transition:width .4s}
+.math-monster{position:absolute;bottom:38%;left:50%;transform:translateX(-50%);text-align:center;font-size:7rem;transition:all .4s;animation:mfloat 2s ease-in-out infinite}
+@keyframes mfloat{0%,100%{transform:translateX(-50%) translateY(0) rotate(0deg)}50%{transform:translateX(-50%) translateY(-18px) rotate(3deg)}}
+.math-monster.dead{animation:mdie .6s forwards!important}
+@keyframes mdie{0%{transform:translateX(-50%) translateY(0) scale(1) rotate(0deg);opacity:1}30%{transform:translateX(-50%) translateY(-40px) scale(1.3) rotate(20deg);opacity:.9}100%{transform:translateX(-50%) translateY(80px) scale(0) rotate(180deg);opacity:0}}
+.math-stars-burst{position:absolute;pointer-events:none;font-size:2.5rem;animation:burst .8s forwards}
+@keyframes burst{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-120px) scale(1.5)}}
+.math-question{position:absolute;top:22%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);padding:22px 50px;border-radius:18px;color:#fff;font-size:3rem;font-weight:700;text-align:center;white-space:nowrap;border:2px solid rgba(255,255,255,.15)}
+.math-input-panel{position:absolute;bottom:55px;left:50%;transform:translateX(-50%);width:90%;max-width:500px;text-align:center}
+.math-input{width:100%;background:rgba(255,255,255,.96);border:3px solid #667eea;border-radius:15px;padding:20px;font-size:2.5rem;text-align:center;font-weight:700}
+.math-input.correct{border-color:#27ae60;background:#d4edda}
+.math-input.wrong{border-color:#e74c3c;background:#f8d7da;animation:shake .5s}
+.math-level-select{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;width:90%;max-width:600px}
+.math-level-btn{display:flex;justify-content:space-between;align-items:center;width:100%;padding:20px 28px;margin:10px 0;background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.3);border-radius:16px;color:#fff;font-size:1.3rem;font-weight:700;cursor:pointer;transition:.2s;backdrop-filter:blur(6px)}
+.math-level-btn:hover{background:rgba(255,255,255,.22);transform:scale(1.02)}
+.math-level-badge{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000;padding:5px 14px;border-radius:20px;font-size:1rem;font-weight:700}
+.math-feedback{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.96);padding:38px 60px;border-radius:25px;color:#fff;text-align:center;z-index:9000;display:none}
+.math-feedback.show{display:block;animation:fadeIn .3s}
+.math-feedback h2{font-size:3rem;margin-bottom:12px}
+.math-feedback.correct h2{color:#00ff88}
+.math-feedback.wrong h2{color:#ff4444}
 </style>
 </head>
 <body>
@@ -211,6 +238,54 @@ body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#667eea
 <button class="btn success" onclick="addWord()">➕ Додати</button>
 </div>
 <div id="dict-list"></div>
+</div>
+
+<!-- MATH GAME -->
+<div id="math-game">
+<button class="math-back" onclick="closeMath()">← Назад</button>
+<div class="math-hud">
+<div id="math-hearts">❤️❤️❤️❤️❤️❤️❤️❤️</div>
+<div>⭐ <span id="math-stars">0</span></div>
+<div id="math-correct-count">0/20</div>
+</div>
+<div class="math-progress-bar"><div class="math-progress-fill" id="math-progress-fill" style="width:0%"></div></div>
+
+<div id="math-level-select" class="math-level-select">
+<h1 style="color:#fff;font-size:2.5rem;margin-bottom:25px">🔢 Обери рівень</h1>
+<button class="math-level-btn" onclick="startMathLevel('A')">
+  <span>🅰️ Рівень A — два числа 0–9</span>
+  <span class="math-level-badge">+20⭐</span>
+</button>
+<button class="math-level-btn" onclick="startMathLevel('B')">
+  <span>🅱️ Рівень B — три числа 0–9</span>
+  <span class="math-level-badge">+30⭐</span>
+</button>
+<button class="math-level-btn" onclick="startMathLevel('C')">
+  <span>🅲 Рівень C — 0–9 та 10–19</span>
+  <span class="math-level-badge">+50⭐</span>
+</button>
+<button class="math-level-btn" onclick="startMathLevel('D')">
+  <span>🅳 Рівень D — 10–99 та 10–99</span>
+  <span class="math-level-badge">+70⭐</span>
+</button>
+<button class="math-level-btn" onclick="startMathLevel('E')">
+  <span>🅴 Рівень E — 10–19 та 100–199</span>
+  <span class="math-level-badge">+100⭐</span>
+</button>
+</div>
+
+<div id="math-game-area" class="hidden">
+<div class="math-monster" id="math-monster">👾</div>
+<div class="math-question" id="math-question">5 + 3 = ?</div>
+<div class="math-input-panel">
+<input type="number" class="math-input" id="math-answer" placeholder="?" autocomplete="off" inputmode="numeric">
+</div>
+</div>
+
+<div class="math-feedback" id="math-feedback">
+<h2 id="mfb-title">✅ Правильно!</h2>
+<div id="mfb-detail" style="font-size:2rem;margin:15px 0"></div>
+</div>
 </div>
 
 <!-- VICTORY -->
@@ -689,7 +764,8 @@ closeEnglish();
 
 function closeVictory(){
 document.getElementById('victory').style.display='none';
-closeEnglish();
+if(mathState){closeMath();}
+else{closeEnglish();}
 }
 
 // Enter key
@@ -880,10 +956,170 @@ ${w.custom?`
 
 document.getElementById('dict-list').innerHTML=html||'<p style="text-align:center;color:#999">Немає слів</p>';
 }
+// ═══════════════════════════════════════════════════════════
+// MATH GAME
+// ═══════════════════════════════════════════════════════════
+const MATH_MONSTERS=['👾','👹','👺','🤖','👻','💀','🎃','👿','😈','🧟'];
+
+const MATH_LEVELS={
+A:{name:'A',reward:20,gen:()=>{
+  const a=r(10),b=r(10),op=rnd(['+','-']);
+  if(op==='-'){const big=Math.max(a,b),small=Math.min(a,b);return{q:`${big} − ${small} = ?`,a:big-small};}
+  return{q:`${a} + ${b} = ?`,a:a+b};
+}},
+B:{name:'B',reward:30,gen:()=>{
+  let a=r(10),b=r(10),c=r(10);
+  const o1=rnd(['+','-']),o2=rnd(['+','-']);
+  let res=o1==='+'?a+b:a-b;
+  res=o2==='+'?res+c:res-c;
+  if(res<0)return MATH_LEVELS.B.gen();
+  const q1=o1==='+'?`${a} + ${b}`:`${a} − ${b}`;
+  const q2=o2==='+'?`+ ${c}`:`− ${c}`;
+  return{q:`${q1} ${q2} = ?`,a:res};
+}},
+C:{name:'C',reward:50,gen:()=>{
+  const a=r(10),b=r(10)+10,op=rnd(['+','-']);
+  if(op==='-'){const big=Math.max(a,b),small=Math.min(a,b);return{q:`${big} − ${small} = ?`,a:big-small};}
+  return{q:`${a} + ${b} = ?`,a:a+b};
+}},
+D:{name:'D',reward:70,gen:()=>{
+  const a=r(90)+10,b=r(90)+10,op=rnd(['+','-']);
+  if(op==='-'){const big=Math.max(a,b),small=Math.min(a,b);return{q:`${big} − ${small} = ?`,a:big-small};}
+  return{q:`${a} + ${b} = ?`,a:a+b};
+}},
+E:{name:'E',reward:100,gen:()=>{
+  const a=r(10)+10,b=r(100)+100,op=rnd(['+','-']);
+  if(op==='-'){const big=Math.max(a,b),small=Math.min(a,b);return{q:`${big} − ${small} = ?`,a:big-small};}
+  return{q:`${a} + ${b} = ?`,a:a+b};
+}}
+};
+
+let mathState=null;
+
 function selectGame(type){
 if(type==='math'){
-alert('Математика - в розробці (існуюча логіка)');
+  document.getElementById('main').style.display='none';
+  document.getElementById('math-game').style.display='block';
+  document.getElementById('math-level-select').classList.remove('hidden');
+  document.getElementById('math-game-area').classList.add('hidden');
 }
+}
+
+function closeMath(){
+document.getElementById('math-game').style.display='none';
+document.getElementById('main').style.display='block';
+mathState=null;
+updateUI();
+}
+
+function startMathLevel(level){
+mathState={level,reward:MATH_LEVELS[level].reward,hearts:8,stars:0,correctCount:0,streak:0,totalGoal:20};
+document.getElementById('math-level-select').classList.add('hidden');
+document.getElementById('math-game-area').classList.remove('hidden');
+updateMathHUD();
+nextMathQuestion();
+document.getElementById('math-answer').onkeypress=e=>{if(e.key==='Enter')checkMathAnswer();};
+}
+
+function updateMathHUD(){
+document.getElementById('math-hearts').textContent='❤️'.repeat(mathState.hearts)+'🖤'.repeat(10-mathState.hearts);
+document.getElementById('math-stars').textContent=mathState.stars;
+document.getElementById('math-correct-count').textContent=`${mathState.correctCount}/${mathState.totalGoal}`;
+document.getElementById('math-progress-fill').style.width=(mathState.correctCount/mathState.totalGoal*100)+'%';
+}
+
+function nextMathQuestion(){
+const q=MATH_LEVELS[mathState.level].gen();
+mathState.currentQ=q;
+const el=document.getElementById('math-monster');
+el.textContent=MATH_MONSTERS[r(MATH_MONSTERS.length)];
+el.classList.remove('dead');
+el.style.animation='none';
+void el.offsetWidth;
+el.style.animation='mfloat 2s ease-in-out infinite';
+document.getElementById('math-question').textContent=q.q;
+const inp=document.getElementById('math-answer');
+inp.value='';
+inp.className='math-input';
+inp.focus();
+}
+
+function checkMathAnswer(){
+const inp=document.getElementById('math-answer');
+const val=inp.value.trim();
+if(val==='')return;
+const answer=parseInt(val,10);
+const correct=mathState.currentQ.a;
+const isCorrect=answer===correct;
+
+if(isCorrect){
+  inp.classList.add('correct');
+  mathState.stars+=mathState.reward;
+  mathState.correctCount++;
+  mathState.streak++;
+  if(mathState.streak%5===0&&mathState.hearts<10)mathState.hearts++;
+  document.getElementById('math-monster').classList.add('dead');
+  spawnStarsBurst();
+  showMathFeedback(true,correct);
+  updateMathHUD();
+  if(mathState.correctCount>=mathState.totalGoal){setTimeout(()=>mathVictory(),1600);return;}
+  setTimeout(()=>{hideMathFeedback();nextMathQuestion();},1500);
+} else {
+  inp.classList.add('wrong');
+  mathState.hearts--;
+  mathState.streak=0;
+  showMathFeedback(false,correct);
+  updateMathHUD();
+  if(mathState.hearts<=0){setTimeout(()=>mathGameOver(),1600);return;}
+  setTimeout(()=>{hideMathFeedback();nextMathQuestion();},2000);
+}
+}
+
+function showMathFeedback(isCorrect,correctAnswer){
+const fb=document.getElementById('math-feedback');
+fb.className='math-feedback show '+(isCorrect?'correct':'wrong');
+document.getElementById('mfb-title').textContent=isCorrect?'✅ Правильно!':'❌ Неправильно';
+document.getElementById('mfb-detail').textContent=isCorrect?`+${mathState.reward}⭐`:`Відповідь: ${correctAnswer}`;
+}
+
+function hideMathFeedback(){
+document.getElementById('math-feedback').className='math-feedback';
+}
+
+function spawnStarsBurst(){
+const game=document.getElementById('math-game');
+for(let i=0;i<3;i++){
+  const b=document.createElement('div');
+  b.className='math-stars-burst';
+  b.textContent='⭐';
+  b.style.left=(25+r(50))+'%';
+  b.style.top=(25+r(25))+'%';
+  b.style.animationDelay=(i*0.15)+'s';
+  game.appendChild(b);
+  setTimeout(()=>b.remove(),900);
+}
+}
+
+function mathVictory(){
+hideMathFeedback();
+const bonus=mathState.reward*20;
+const total=mathState.stars+bonus;
+const user=getUser();
+user.stars+=total;
+saveUser(user);
+updateUI();
+document.getElementById('victory').querySelector('h1').textContent='🏆 ПЕРЕМОГА!';
+document.getElementById('victory-amount').textContent=`+${total}⭐`;
+document.getElementById('victory').style.display='flex';
+}
+
+function mathGameOver(){
+hideMathFeedback();
+const user=getUser();
+user.stars+=mathState.stars;
+saveUser(user);
+alert(`💀 Гру завершено!\n\n⭐ Зароблено: ${mathState.stars}\n✅ Правильних: ${mathState.correctCount}/20`);
+closeMath();
 }
 
 // ═══════════════════════════════════════════════════════════
